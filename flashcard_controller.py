@@ -1,28 +1,22 @@
 import pandas as pd
 
+# Load csv in dataframe #
+
 SOURCE_FILE = "data/chinese_2K_by_frequency.csv"  # From jeff carp's Weibo post analysis
 # https://www.jeffcarp.com/posts/2020/most-common-chinese-words-on-weibo/
 
-# Load csv in dataframe #
-
+TARGET_FILE = "data/chinese_subset.csv"
 
 class FlashControl:
-    def __init__(self):
-        self.timer=None
-        try:
-            self.df = self.load_file(SOURCE_FILE)
-            print("File Loaded")
-        except FileNotFoundError as error:
-            print(error)
+    def __init__(self, load_previous):
+        self.df = ""
         self.random_row = ""
         self.random_word = ""
         self.random_definition = ""
-
-    # Load File
-
-    def load_file(self, filename):
-        data_frame = pd.read_csv(filename)
-        return data_frame
+        if load_previous:
+            self.df = pd.read_csv(TARGET_FILE)
+        else:
+            self.df = pd.read_csv(SOURCE_FILE)
 
     # Strip HTML tags #
 
@@ -37,7 +31,17 @@ class FlashControl:
         self.random_word = self.random_row.word.iloc[0]
         self.random_definition = self.random_row.back.iloc[0]
         self.random_definition = self.html_strip(self.random_definition)
+        print(self.random_row.index)
 
         # Debugging Stuff
         # print(f"{self.random_word}\n{self.random_definition}")
         # Debugging Stuff
+
+    def remove_word(self):
+        row_index = self.random_row.index
+        self.df = self.df.drop(index=row_index)
+        print(f"Row deleted: {row_index}, Size: {self.df.count()}")
+        try:
+            self.df.to_csv(TARGET_FILE)
+        except FileNotFoundError as error:
+            print(error)
